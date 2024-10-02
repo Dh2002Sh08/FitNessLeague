@@ -2,39 +2,16 @@
 import { chain, client, CONTRACT } from "@/utils/constants";
 import { useState } from "react";
 import { prepareContractCall, toWei } from "thirdweb";
-import { ConnectButton, TransactionButton, useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react";
-import { Button } from "./button";
+import { ConnectButton, TransactionButton, useActiveAccount, useReadContract } from "thirdweb/react";
 
 export default function Test() {
   const [inputValue, setAmount] = useState('');
   const account = useActiveAccount();
-  const { mutate: sendTransaction } = useSendTransaction();
 
   const { data: getBalance, isLoading: loading } = useReadContract({
     contract: CONTRACT,
     method: "getBalance"
   });
-
-  const handleDeposit = async (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    const amount = toWei(inputValue);
-
-    try {
-      const transaction  = await prepareContractCall({
-        contract: CONTRACT,
-        method: "deposit",
-        params: [],
-        value : amount,
-      });
-
-      const response = await sendTransaction(transaction);
-      console.log('Transaction Response:', response);
-      alert("Wait for the transaction to be mined");
-
-    } catch (error) {
-      console.error('Error sending transaction:', error);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
@@ -66,8 +43,16 @@ export default function Test() {
         <p className="mt-2 text-center text-gray-400">Entered Amount: {inputValue}</p>
 
         <div className="flex flex-col items-center mt-4 space-y-4">
-          <Button onClick={handleDeposit} className="bg-blue-600 text-white py-2 px-6 rounded-md shadow hover:bg-blue-700 transition">Deposit</Button>
-          
+          <TransactionButton
+          transaction={() => prepareContractCall({
+            contract: CONTRACT,
+            method: "deposit",
+            params: [],
+            value: toWei(inputValue)
+          })}
+           className=" py-2 rounded-md shadow hover:bg-yellow-500 text-white transition"
+          >Deposit</TransactionButton>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
             <TransactionButton 
               transaction={() => prepareContractCall({
